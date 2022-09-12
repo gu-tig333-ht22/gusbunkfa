@@ -1,33 +1,41 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(App());
+void main() => runApp(const App());
 
 class App extends StatelessWidget {
+  const App({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(title: 'TIG169 TODO', home: TodoList());
+    return MaterialApp(
+      title: 'TIG169 TODO',
+      theme: ThemeData.dark(),
+      home: TodoList(),
+    );
   }
 }
 
 class TodoList extends StatefulWidget {
+  const TodoList({super.key});
+
   @override
   _TodoListState createState() => _TodoListState();
 }
 
-class hello1 {
-  hello1({required this.title, required this.hej});
+class object {
+  object({required this.title, required this.outcome});
   String title;
-  bool hej;
+  bool outcome;
 }
 
 //ska göras interaktiv
 class _TodoListState extends State<TodoList> {
-  List<hello1> hello = <hello1>[
-    hello1(title: 'Matlåda', hej: false),
-    hello1(title: 'Gym', hej: false),
-    hello1(title: 'Uni', hej: false),
-    hello1(title: 'Brygghuset på onsdag', hej: true),
-    hello1(title: 'meditera', hej: false),
+  List<object> items = <object>[
+    object(title: 'Matlåda', outcome: false),
+    object(title: 'Gym', outcome: false),
+    object(title: 'Uni', outcome: false),
+    object(title: 'Brygghuset på onsdag', outcome: true),
+    object(title: 'meditera', outcome: false),
   ];
   final List<String> _todoList = <String>[];
   final TextEditingController _textFieldController = TextEditingController();
@@ -37,18 +45,18 @@ class _TodoListState extends State<TodoList> {
     return Scaffold(
       appBar: AppBar(title: const Text('TIG169 TODO')),
       body: ListView.builder(
-        itemCount: hello.length,
+        itemCount: items.length,
         itemBuilder: (context, i) {
           return Card(
             child: ListTile(
-              leading: hello[i].hej.toString() == 'true'
-                  ? const Icon(Icons.check_box_sharp)
+              leading: items[i].outcome.toString() == 'true'
+                  ? const Icon(Icons.check_box_sharp) //iconbutton()
                   : const Icon(Icons.check_box_outline_blank_outlined),
               onTap: () {},
               title: Text(
-                hello[i].title,
+                items[i].title,
                 style: TextStyle(
-                  decoration: hello[i].hej.toString() == 'true'
+                  decoration: items[i].outcome.toString() == 'true'
                       ? TextDecoration.lineThrough
                       : TextDecoration.none,
                 ),
@@ -62,21 +70,75 @@ class _TodoListState extends State<TodoList> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => SecondView()));
+        },
         child: const Icon(Icons.add),
       ),
     );
   }
 
 //ska göras interaktiv
-  void _addTodohello1(String title) {
+  void _addTodoobject(String title) {
     setState(() {
       _todoList.add(title);
     });
     _textFieldController.clear();
   }
 
-  Widget _buildTodohello1(String title) {
+  Widget _buildTodoobject(String title) {
     return ListTile(title: Text(title));
+  }
+}
+
+class SecondView extends StatelessWidget {
+  const SecondView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('TIG169 TODO'),
+      ),
+      body: Center(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Container(height: 20),
+            _todotext(),
+            Container(height: 20),
+            _symbol(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _todotext() {
+    return Container(
+      margin: const EdgeInsets.only(left: 25, right: 25, top: 30),
+      child: const TextField(
+        decoration: InputDecoration(
+          border: OutlineInputBorder(),
+          hintText: 'Vad tänker du göra?',
+        ),
+      ),
+    );
+  }
+
+  Widget _symbol() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.add),
+        Column(
+          children: const [
+            Text('komplettera listan', style: TextStyle(fontSize: 16)),
+          ],
+        ),
+      ],
+    );
   }
 }
