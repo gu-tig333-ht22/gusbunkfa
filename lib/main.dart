@@ -1,144 +1,185 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'TDL_provider.dart';
 
-void main() => runApp(const App());
+void main() => runApp(const TaskApp());
 
-class App extends StatelessWidget {
-  const App({super.key});
+class Task {
+  Task({required this.name, required this.checked});
+  final String name;
+  bool checked;
+}
+
+class TaskList extends StatefulWidget {
+  const TaskList({Key? key}) : super(key: key);
+
+  get checked => null;
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'TIG169 TODO',
-      theme: ThemeData.dark(),
-      home: TodoList(),
-    );
-  }
+  _TaskListState createState() => _TaskListState();
 }
 
-class TodoList extends StatefulWidget {
-  const TodoList({super.key});
-
-  @override
-  _TodoListState createState() => _TodoListState();
-}
-
-class object {
-  object({required this.title, required this.outcome});
-  String title;
-  bool outcome;
-}
-
-//ska göras interaktiv
-class _TodoListState extends State<TodoList> {
-  List<object> items = <object>[
-    object(title: 'Matlåda', outcome: false),
-    object(title: 'Gym', outcome: false),
-    object(title: 'Uni', outcome: false),
-    object(title: 'Brygghuset på onsdag', outcome: true),
-    object(title: 'meditera', outcome: false),
-  ];
-  final List<String> _todoList = <String>[];
+class _TaskListState extends State<TaskList> {
   final TextEditingController _textFieldController = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('TIG169 TODO')),
-      body: ListView.builder(
-        itemCount: items.length,
-        itemBuilder: (context, i) {
-          return Card(
-            child: ListTile(
-              leading: items[i].outcome.toString() == 'true'
-                  ? const Icon(Icons.check_box_sharp) //iconbutton()
-                  : const Icon(Icons.check_box_outline_blank_outlined),
-              onTap: () {},
-              title: Text(
-                items[i].title,
-                style: TextStyle(
-                  decoration: items[i].outcome.toString() == 'true'
-                      ? TextDecoration.lineThrough
-                      : TextDecoration.none,
-                ),
-              ),
-              trailing: IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.close),
-              ),
-            ),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => SecondView()));
-        },
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-
-//ska göras interaktiv
-  void _addTodoobject(String title) {
-    setState(() {
-      _todoList.add(title);
-    });
-    _textFieldController.clear();
-  }
-
-  Widget _buildTodoobject(String title) {
-    return ListTile(title: Text(title));
-  }
-}
-
-class SecondView extends StatelessWidget {
-  const SecondView({super.key});
+  final List<Task> _Tasks = <Task>[];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('TIG169 TODO'),
+        title: const Text('Task manager: TIG333'),
+        backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+        actions: <Widget>[
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              setState(() {
+                Provider.of<TaskProvider>(context, listen: false)
+                    .setFilterBy(value);
+              });
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(child: Text('Show all'), value: 'all'),
+              const PopupMenuItem(child: Text('Dont show all'), value: 'not'),
+              const PopupMenuItem(child: Text('Show all'), value: 'Done')
+            ],
+          )
+        ],
       ),
-      body: Center(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Container(height: 20),
-            _todotext(),
-            Container(height: 20),
-            _symbol(),
-          ],
-        ),
+      body: ListView(
+        padding: const EdgeInsets.symmetric(vertical: 6.0),
+        children: _Tasks.map((Task todo) {
+          return TodoItem(
+            todo: todo,
+            onTodoChanged: _handleTodoChange,
+          );
+        }).toList(),
       ),
+      floatingActionButton: FloatingActionButton(
+          onPressed: () => _displayDialog(),
+          tooltip: 'Add task',
+          backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+          child: const Icon(Icons.add)),
     );
   }
 
-  Widget _todotext() {
-    return Container(
-      margin: const EdgeInsets.only(left: 25, right: 25, top: 30),
-      child: const TextField(
-        decoration: InputDecoration(
-          border: OutlineInputBorder(),
-          hintText: 'Vad tänker du göra?',
-        ),
+  void _handleTodoChange(Task todo) {
+    setState(() {
+      todo.checked = !todo.checked;
+    });
+  }
+
+  void _addTodoItem(String name) {
+    setState(() {
+      _Tasks.add(Task(name: name, checked: false));
+    });
+    _textFieldController.clear();
+  }
+
+  Future<void> _displayDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Add task'),
+          content: TextField(
+            controller: _textFieldController,
+            decoration:
+                const InputDecoration(hintText: 'What would you like to do?'),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('discontinue'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Add'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _addTodoItem(_textFieldController.text);
+              },
+            )
+          ],
+        );
+      },
+    );
+  }
+}
+
+Widget deleteButton(BuildContext context, todo, String name) {
+  return IconButton(
+    icon: const Icon(Icons.delete_outline),
+    tooltip: "Delete",
+    onPressed: () => showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Warning'),
+        content: Text("Do you want to delete '$name'?"),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'Cancel'),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Provider.of<TaskProvider>(context, listen: false)
+                  .removeTask(todo);
+              Navigator.pop(context);
+            },
+            child: const Text('OK'),
+          ),
+        ],
       ),
+    ),
+  );
+}
+
+class TodoItem extends StatelessWidget {
+  TodoItem({
+    required this.todo,
+    required this.onTodoChanged,
+  }) : super(key: ObjectKey(todo));
+
+  final Task todo;
+  final onTodoChanged;
+
+  TextStyle? _getTextStyle(bool checked) {
+    if (!checked) return null;
+
+    return const TextStyle(
+      color: Color.fromARGB(115, 0, 0, 0),
+      decoration: TextDecoration.lineThrough,
     );
   }
 
-  Widget _symbol() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Icon(Icons.add),
-        Column(
-          children: const [
-            Text('komplettera listan', style: TextStyle(fontSize: 16)),
-          ],
-        ),
-      ],
+  @override
+  Widget build(BuildContext context) {
+    return StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+      return Card(
+          child: CheckboxListTile(
+        title: Text(todo.name, style: _getTextStyle(todo.checked)),
+        value: todo.checked,
+        secondary: deleteButton(context, todo, todo.name),
+        onChanged: (newValue) {
+          onTodoChanged(todo);
+        },
+        controlAffinity: ListTileControlAffinity.leading,
+      ));
+    });
+  }
+}
+
+class TaskApp extends StatelessWidget {
+  const TaskApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      title: 'TIG333:',
+      home: TaskList(),
     );
   }
 }
