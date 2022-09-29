@@ -4,10 +4,11 @@ import 'model.dart';
 class SecondView extends StatefulWidget {
   final TaskItemState taskitem;
 
-  const SecondView(this.taskitem);
+  const SecondView(this.taskitem, {super.key});
 
   @override
   State<StatefulWidget> createState() {
+    // ignore: no_logic_in_create_state
     return SecondViewState(taskitem);
   }
 }
@@ -78,7 +79,8 @@ class SecondViewState extends State<SecondView> {
       ElevatedButton(
           child: const Text("+ Lägg till"),
           onPressed: () {
-            Navigator.pop(context, TaskItemState(title: title));
+            Navigator.pop(
+                context, TaskItemState(id: '', title: title, done: false));
           }),
     ]);
   }

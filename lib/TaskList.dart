@@ -1,3 +1,4 @@
+// ignore: file_names
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:template/model.dart';
@@ -5,13 +6,13 @@ import 'package:template/model.dart';
 class TaskList extends StatefulWidget {
   final List<TaskItemState> filterList;
 
-  const TaskList({required this.filterList});
+  const TaskList({super.key, required this.filterList});
 
   @override
-  State<TaskList> createState() => _BuildListState();
+  State<TaskList> createState() => _CreateListState();
 }
 
-class _BuildListState extends State<TaskList> {
+class _CreateListState extends State<TaskList> {
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -24,10 +25,10 @@ class _BuildListState extends State<TaskList> {
     var checkboxListTile = CheckboxListTile(
       contentPadding: const EdgeInsets.all(10.0),
       controlAffinity: ListTileControlAffinity.leading,
-      value: taskitem.value,
+      value: taskitem.done,
       title: Text(taskitem.title,
           style: TextStyle(
-              decoration: taskitem.value
+              decoration: taskitem.done
                   ? TextDecoration.lineThrough
                   : TextDecoration.none)),
       secondary: IconButton(
@@ -35,9 +36,9 @@ class _BuildListState extends State<TaskList> {
           onPressed: () {
             Provider.of<MyState>(context, listen: false).removetask(taskitem);
           }),
-      onChanged: (value) => setState(
-        () => taskitem.value = value!,
-      ),
+      onChanged: (bool? value) {
+        Provider.of<MyState>(context, listen: false).updatetask(taskitem);
+      },
     );
     return checkboxListTile;
   }
