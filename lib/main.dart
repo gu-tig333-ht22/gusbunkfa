@@ -44,8 +44,8 @@ class _MyHomeViewState extends State<MyHomeView> {
           centerTitle: true,
           actions: [
             PopupMenuButton(
-                onSelected: (String value) {
-                  Provider.of<MyState>(context, listen: false).filter(value);
+                onSelected: (String done) {
+                  Provider.of<MyState>(context, listen: false).filter(done);
                 },
                 itemBuilder: (context) => [
                       const PopupMenuItem(
@@ -70,9 +70,12 @@ class _MyHomeViewState extends State<MyHomeView> {
                 context,
                 MaterialPageRoute(
                     builder: (context) => SecondView(TaskItemState(
+                          id: '',
                           title: '',
+                          done: false,
                         ))));
             if (newtask != null) {
+              // ignore: use_build_context_synchronously
               Provider.of<MyState>(context, listen: false).addtask(newtask);
             }
           },
@@ -84,17 +87,17 @@ class _MyHomeViewState extends State<MyHomeView> {
     filteredList.clear();
 
     if (filterBy == "Klar") {
-      list.forEach((TaskItemState element) {
-        if (element.value == true) {
+      for (var element in list) {
+        if (element.done == true) {
           filteredList.add(element);
         }
-      });
+      }
       return filteredList;
     }
 
     if (filterBy == "Inte") {
       for (var element in list) {
-        if (element.value == false) {
+        if (element.done == false) {
           filteredList.add(element);
         }
       }
